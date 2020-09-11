@@ -1,0 +1,11 @@
+example
+.github
+src
+rollup.config.js
+tsconfig*
+.gitpod*
+.cache
+/test/*
+/coverage/*
+.prettierrc
+karma*
