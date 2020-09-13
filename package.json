@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "A browser/Node.js client for Node Lambdas -- https://jsfn.run/",
   "main": "./dist/index.js",
+  "type": "module",
   "typings": "./dist/index.d.ts",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^8.4.0",
