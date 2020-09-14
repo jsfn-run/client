@@ -39,7 +39,7 @@ export function pipe(input: Response | Blob | Promise<Response | Blob>, ...strea
   return streams.reduce((previous, next) => run(previous, next), toPromise(input));
 }
 
-async function run(input: Promise<Response | Blob>, options: RunOptions): Promise<Response> {
+function run(input: Promise<Response | Blob>, options: RunOptions): Promise<Response> {
   return toPromise(input).then(toBlob).then(fn(options));
 }
 

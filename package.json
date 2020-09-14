@@ -6,7 +6,6 @@
   "type": "module",
   "typings": "./dist/index.d.ts",
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^8.4.0",
     "@rollup/plugin-typescript": "^4.1.2",
     "@types/jasmine": "^3.5.14",
     "@types/node": "14.0.4",
@@ -25,7 +24,8 @@
     "zone.js": "^0.10.3"
   },
   "scripts": {
-    "build": "rm -rf ./dist && tsc -p tsconfig.json -d --outDir build && rollup --config",
+    "build": "rm -rf ./dist && tsc -p tsconfig.json -d --outDir build && npm run compress",
+    "compress": "rollup --config",
     "test": "./node_modules/.bin/karma start",
     "watch": "nodemon -e ts,json,js -w src -x npm run build"
   },
