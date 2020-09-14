@@ -15,8 +15,9 @@ export function fn(runOptions: RunOptions): (input: Blob) => Promise<Response> {
   const action = runOptions.action || '';
   const protocol = runOptions.local ? 'http://' : 'https://';
   const domain = runOptions.local ? 'localhost' : cloudDomain;
+  const port = runOptions.local && runOptions.port ? ':' + runOptions.port : '';
   const searchParams = String(new URLSearchParams(Object.entries(Object(options))));
-  const url = protocol + functionName + domain + '/' + action + '?' + searchParams;
+  const url = protocol + functionName + domain + port + '/' + action + '?' + searchParams;
   let headers: Record<string, string>;
 
   if (runOptions.credentials) {

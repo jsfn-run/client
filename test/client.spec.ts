@@ -27,10 +27,10 @@ describe('pipe function calls', () => {
     const input = new Blob([json], { type: 'application/json' });
     const fetch = (window.fetch = jasmine.createSpy().and.callFake(() => Promise.resolve(new Response(input))));
 
-    const response = await fn({ local: true })(input);
+    const response = await fn({ local: true, port: 2233 })(input);
 
     expect(await response.text()).toBe(json);
-    expect(fetch).toHaveBeenCalledWith('http://localhost/?', { body: input, method: 'POST' });
+    expect(fetch).toHaveBeenCalledWith('http://localhost:2233/?', { body: input, method: 'POST' });
   });
 
   it('should stop calls if one step returns an error', async () => {
