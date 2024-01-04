@@ -1,5 +1,3 @@
-const cloudDomain = '.jsfn.run';
-
 export interface RunOptions {
   name?: string;
   port?: number;
@@ -9,12 +7,14 @@ export interface RunOptions {
   credentials?: Record<string, string>;
 }
 
-export function fn(runOptions: RunOptions): (input: Blob) => Promise<Response> {
+type Fn = (input: Blob) => Promise<Response>;
+
+export function fn(runOptions: RunOptions): Fn {
   const options = runOptions.options || {};
   const functionName = runOptions.local ? '' : runOptions.name;
   const action = runOptions.action || '';
   const protocol = runOptions.local ? 'http://' : 'https://';
-  const domain = runOptions.local ? 'localhost' : cloudDomain;
+  const domain = runOptions.local ? 'localhost' : '.jsfn.run';
   const port = runOptions.local && runOptions.port ? ':' + runOptions.port : '';
   const searchParams = String(new URLSearchParams(Object.entries(Object(options))));
   const url = protocol + functionName + domain + port + '/' + action + '?' + searchParams;
@@ -25,7 +25,7 @@ export function fn(runOptions: RunOptions): (input: Blob) => Promise<Response> {
     headers.authorization = 'Bearer ' + token;
   }
 
-  return async function (body: Blob) {
+  return async function(body: Blob) {
     const response = await fetch(url, { body, method: 'POST', headers });
 
     if (!response.ok) {
@@ -36,16 +36,29 @@ export function fn(runOptions: RunOptions): (input: Blob) => Promise<Response> {
   };
 }
 
-export async function pipe(input: Response | Blob, ...streams: RunOptions[]): Promise<Response | Blob> {
-  let last: Response | Blob = input;
-
-  for (const step of streams) {
-    last = await fn(step)(await toBlob(last));
-  }
-
-  return last;
+function toFn(o: RunOptions | Fn) {
+  return o => typeof o === 'function' ? o : fn(o);
 }
 
-function toBlob(input: Blob | Response): Promise<Blob> {
-  return input instanceof Blob ? Promise.resolve(input) : input.blob();
+export async function pipe(...fns: Array<RunOptions | Fn>): Promise<Response> {
+  if (!fns.length) {
+    throw new Error('One or more steps must be provided');
+  }
+
+  if (fns.length === 1) {
+    return toFn(fns[0])(input);
+  }
+  
+  const steps = fns.map(toFn);
+  const last = steps.pop();
+
+  return async (input) => {
+    let v = input;
+
+    for (const fn of steps) {
+      v = fn(v).body;
+    }
+
+    return last(v);
+  };
 }
