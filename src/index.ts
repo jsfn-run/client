@@ -7,7 +7,7 @@ export interface RunOptions {
   credentials?: Record<string, string>;
 }
 
-type Fn = (input: Blob) => Promise<Response>;
+type Fn = <T extends BodyInit>(input: T) => Promise<Response>;
 
 export function fn(runOptions: RunOptions): Fn {
   const options = runOptions.options || {};
@@ -22,11 +22,12 @@ export function fn(runOptions: RunOptions): Fn {
 
   if (runOptions.credentials) {
     const token = btoa(JSON.stringify(runOptions.credentials));
-    headers.authorization = 'Bearer ' + token;
+    headers.Authorization = 'Bearer ' + token;
   }
 
-  return async function(body: Blob) {
-    const response = await fetch(url, { body, method: 'POST', headers });
+  return async function <T extends BodyInit>(body: T) {
+    const duplex = body instanceof ReadableStream ? { duplex: 'half' } : {};
+    const response = await fetch(url, { body, method: 'POST', headers, ...duplex });
 
     if (!response.ok) {
       throw new Error(await response.text());
@@ -36,27 +37,27 @@ export function fn(runOptions: RunOptions): Fn {
   };
 }
 
-function toFn(o: RunOptions | Fn) {
-  return o => typeof o === 'function' ? o : fn(o);
+function toFn(o: RunOptions | Fn): Fn {
+  return typeof o === 'function' ? o : fn(o);
 }
 
-export async function pipe(...fns: Array<RunOptions | Fn>): Promise<Response> {
+export function pipe(...fns: Array<RunOptions | Fn>): Fn {
   if (!fns.length) {
     throw new Error('One or more steps must be provided');
   }
 
   if (fns.length === 1) {
-    return toFn(fns[0])(input);
+    return toFn(fns[0]);
   }
-  
+
   const steps = fns.map(toFn);
   const last = steps.pop();
 
   return async (input) => {
-    let v = input;
+    let v: BodyInit = input;
 
     for (const fn of steps) {
-      v = fn(v).body;
+      v = (await fn(v)).body;
     }
 
     return last(v);

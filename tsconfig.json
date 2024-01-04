@@ -4,12 +4,10 @@
     "moduleResolution": "node",
     "target": "es2019",
     "lib": ["ESNext", "DOM"],
-    "typeRoots": ["node_modules/@types"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "types": ["node"],
-    "module": "es2020"
+    "module": "ESNext",
+    "esModuleInterop": true
   },
-  "files": ["src/index.ts"],
-  "include": ["src/**/*.ts"]
+  "files": ["src/index.ts"]
 }

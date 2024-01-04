@@ -1,15 +1,16 @@
 # Node Lambdas Client
 
+Node/web interface to use with [jsfn.run](https://jsfn.run) API.
+
 ## Usage
 
-```typescript
-// JSON to YAML to JSON
-// Same as running:
-// > echo '{"number": 1}' | fn yaml encode | fn yaml decode
-const json = JSON.stringify({ number: 'one' });
-const input = new Blob([json], { type: 'application/json' });
-const response = await pipe(input, { name: 'yaml', action: 'encode' }, { name: 'yaml', action: 'decode' });
+Here's an example on how to convert between JSON to YAML and then base64 using a web function:
 
-// output { "number": 1 }
-console.log(response);
+```js
+// JSON > YAML > base64
+const json = JSON.stringify({ hello: 'world' });
+const encode = pipe({ name: 'yaml', action: 'encode' }, { name: 'base64', action: 'encode' });
+const response = await encode(json);
+
+console.log(await response.text());
 ```
