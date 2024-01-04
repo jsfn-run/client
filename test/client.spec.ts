@@ -2,7 +2,15 @@ import { createServer } from 'http';
 import { pipe, fn } from '../src/index.js';
 
 const port = 12345;
-createServer((req, res) => req.pipe(res)).listen(port);
+let server;
+
+beforeAll(() => {
+  server = createServer((req, res) => req.pipe(res)).listen(port);
+});
+
+afterAll(() => {
+  server.close();
+});
 
 describe('pipe function calls', () => {
   it('should throw an error if no steps are provided', () => {
